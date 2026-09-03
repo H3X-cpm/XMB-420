@@ -40,7 +40,7 @@ XMB 420 is a Termux-based script manager for Car Parking Multiplayer that lets y
 7. 🔧 Upgrades - All upgrades
 8. 🎯 Aim - Auto-aim assist
 
-##How to Setup
+## How to Setup
 
 Step 1 install termux:
 
