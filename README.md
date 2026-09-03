@@ -56,3 +56,7 @@ termux-setup-storage
 
 pkg update && pkg upgrade -y
 
+## Step 2 Install XMB 420
+
+run this command in termux 
+bash <(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/xmb420.sh)
