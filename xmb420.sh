@@ -174,6 +174,74 @@ loading_screen() {
 }
 
 # ============================================
+# CHECK AND FIX TERMUX REPO
+# ============================================
+
+fix_termux_repo() {
+    echo -e "\n${RGB_YELLOW}[*] Checking Termux repositories...${RESET}"
+    
+    # Check if termux-change-repo exists
+    if command -v termux-change-repo &> /dev/null; then
+        echo -e "${RGB_CYAN}[!] Please select a working mirror if prompted${RESET}"
+        sleep 2
+        termux-change-repo
+    fi
+    
+    # Update package lists
+    echo -e "${RGB_YELLOW}[*] Updating package lists...${RESET}"
+    pkg update -y
+    
+    # Try to fix mirrors if update fails
+    if [ $? -ne 0 ]; then
+        echo -e "${RGB_RED}[!] Update failed. Trying to fix mirrors...${RESET}"
+        echo -e "${RGB_YELLOW}[*] Please select a mirror:${RESET}"
+        echo -e "  ${RGB_GREEN}1.${RESET} https://mirror.termux.org/termux/"
+        echo -e "  ${RGB_GREEN}2.${RESET} https://packages.termux.org/apt/"
+        echo -e "  ${RGB_GREEN}3.${RESET} Skip (use current)"
+        read -p "Choose mirror: " mirror_choice
+        
+        case $mirror_choice in
+            1)
+                echo -e "${RGB_YELLOW}[*] Setting mirror to termux.org...${RESET}"
+                sed -i 's|https://[^/]*/termux|https://mirror.termux.org/termux|g' $PREFIX/etc/apt/sources.list
+                pkg update -y
+                ;;
+            2)
+                echo -e "${RGB_YELLOW}[*] Setting mirror to packages.termux.org...${RESET}"
+                sed -i 's|https://[^/]*/termux|https://packages.termux.org/apt|g' $PREFIX/etc/apt/sources.list
+                pkg update -y
+                ;;
+            *)
+                echo -e "${RGB_YELLOW}[*] Skipping mirror change${RESET}"
+                ;;
+        esac
+    fi
+}
+
+# ============================================
+# INSTALL LUA PROPERLY
+# ============================================
+
+install_lua() {
+    echo -e "\n${RGB_YELLOW}[*] Installing Lua...${RESET}"
+    
+    # Try different Lua package names
+    local lua_packages=("lua" "lua53" "lua51" "lua-5.3" "lua-5.4")
+    
+    for pkg in "${lua_packages[@]}"; do
+        echo -e "${RGB_CYAN}[*] Trying: $pkg${RESET}"
+        if pkg install -y "$pkg" 2>/dev/null; then
+            echo -e "${RGB_GREEN}[✓] Successfully installed: $pkg${RESET}"
+            return 0
+        fi
+    done
+    
+    echo -e "${RGB_RED}[✗] Failed to install Lua!${RESET}"
+    echo -e "${RGB_YELLOW}[!] Please manually install: pkg install lua${RESET}"
+    return 1
+}
+
+# ============================================
 # MAIN EXECUTION
 # ============================================
 
@@ -185,23 +253,67 @@ sleep 1.5
 loading_screen
 
 # ============================================
+# FIX REPOSITORIES
+# ============================================
+
+fix_termux_repo
+
+# ============================================
 # DEPENDENCY CHECK
 # ============================================
 
 echo -e "\n${RGB_BLUE}[*] Checking dependencies...${RESET}"
-deps=("curl" "openssl" "lua" "luajit" "git")
+
+deps=("curl" "openssl" "git" "python" "lua")
 missing=()
+
 for dep in "${deps[@]}"; do
     if ! command -v "$dep" &> /dev/null; then
         missing+=("$dep")
     fi
 done
 
+# Special check for lua (might be installed as lua53)
+if ! command -v lua &> /dev/null; then
+    if command -v lua5.3 &> /dev/null; then
+        echo -e "${RGB_CYAN}[!] Lua found as lua5.3, creating alias...${RESET}"
+        alias lua='lua5.3'
+    elif command -v lua53 &> /dev/null; then
+        echo -e "${RGB_CYAN}[!] Lua found as lua53, creating alias...${RESET}"
+        alias lua='lua53'
+    else
+        missing+=("lua")
+    fi
+fi
+
 if [ ${#missing[@]} -ne 0 ]; then
     echo -e "${RGB_YELLOW}[!] Missing: ${missing[*]}${RESET}"
     echo -e "${RGB_BLUE}[*] Installing...${RESET}"
-    pkg update -y
-    pkg install "${missing[@]}" -y
+    
+    for dep in "${missing[@]}"; do
+        if [ "$dep" == "lua" ]; then
+            install_lua
+        else
+            pkg install -y "$dep"
+        fi
+    done
+fi
+
+# Verify Lua is installed
+if ! command -v lua &> /dev/null; then
+    if command -v lua5.3 &> /dev/null; then
+        alias lua='lua5.3'
+        echo -e "${RGB_GREEN}[✓] Lua available as lua5.3${RESET}"
+    elif command -v lua53 &> /dev/null; then
+        alias lua='lua53'
+        echo -e "${RGB_GREEN}[✓] Lua available as lua53${RESET}"
+    else
+        echo -e "${RGB_RED}[✗] Lua is still not installed!${RESET}"
+        echo -e "${RGB_YELLOW}[!] Please run: pkg install lua${RESET}"
+        echo -e "${RGB_YELLOW}[!] Or try: pkg install lua53${RESET}"
+        echo -e "\n${RGB_YELLOW}[!] Press Enter to continue anyway...${RESET}"
+        read
+    fi
 fi
 
 echo -e "${RGB_GREEN}[✓] All dependencies installed${RESET}"
@@ -223,6 +335,24 @@ mkdir -p "$HOME/.xmb420/tools"
 echo -e "\n${RGB_CYAN}[*] Launching XMB 420...${RESET}"
 sleep 1
 
-lua <(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/menu.lua)
+# Check if lua command exists
+if command -v lua &> /dev/null; then
+    lua <(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/menu.lua)
+else
+    # Try alternative lua commands
+    if command -v lua5.3 &> /dev/null; then
+        lua5.3 <(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/menu.lua)
+    elif command -v lua53 &> /dev/null; then
+        lua53 <(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/menu.lua)
+    else
+        echo -e "${RGB_RED}[✗] Cannot find Lua!${RESET}"
+        echo -e "${RGB_YELLOW}[!] Please install Lua manually:${RESET}"
+        echo -e "  ${RGB_GREEN}pkg install lua${RESET}"
+        echo -e "  ${RGB_GREEN}pkg install lua53${RESET}"
+        echo -e "\n${RGB_YELLOW}[!] Then run:${RESET}"
+        echo -e "  ${RGB_GREEN}bash $0${RESET}"
+        exit 1
+    fi
+fi
 
 exit 0
