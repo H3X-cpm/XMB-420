@@ -131,6 +131,7 @@ local function encryptScript()
     print("\27[36m  Options:\27[0m")
     print("  " .. "\27[32m1.\27[0m Encrypt local script")
     print("  " .. "\27[32m2.\27[0m Encrypt downloaded script")
+    print("  " .. "\27[32m3.\27[0m Encrypt SeKoPrimeCP1-2 script")
     print("  " .. "\27[31m0.\27[0m Back")
     print("")
     io.write("\27[34m  Choose: \27[0m")
@@ -147,6 +148,18 @@ local function encryptScript()
         print("")
         io.write("  Enter filename (e.g., money.lua): ")
         input_file = os.getenv("HOME") .. "/.xmb420/downloads/" .. io.read()
+    elseif choice == "3" then
+        input_file = os.getenv("HOME") .. "/.xmb420/downloads/SeKoPrimeCP1-2.lua"
+        print("\n  " .. "\27[36mEncrypting SeKoPrimeCP1-2.lua\27[0m")
+        -- Check if file exists
+        local file = io.open(input_file, "r")
+        if not file then
+            print("\27[31m[✗] SeKoPrimeCP1-2.lua not found! Download it first.\27[0m")
+            print("\27[36mPress Enter to continue...\27[0m")
+            io.read()
+            return
+        end
+        file:close()
     elseif choice == "0" then
         return
     else
@@ -328,6 +341,7 @@ local function about()
     print("  • AES-256-CBC Encryption")
     print("  • Decrypt your own scripts")
     print("  • Organize scripts by game version")
+    print("  • 9 scripts per version including SeKoPrimeCP1-2")
     print("  • TUI interface")
     print("\n\27[36mPress Enter to continue...\27[0m")
     io.read()
