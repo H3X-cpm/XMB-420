@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 
 # XMB 420 - Car Parking Multiplayer Script Manager
+# Version: v2.9
 # GitHub: H3X-cpm/XMB-420
+
+# ============================================
+# VERSION INFO
+# ============================================
+
+XMB_VERSION="v2.9"
+XMB_RELEASE="September 2026"
+XMB_AUTHOR="H3X-cpm"
 
 # ============================================
 # ANSI COLOR CODES WITH RGB SUPPORT
 # ============================================
 
-# Standard colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -17,7 +25,6 @@ CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 NC='\033[0m'
 
-# RGB 24-bit colors (for true color terminals)
 RGB_RED='\033[38;2;255;0;0m'
 RGB_GREEN='\033[38;2;0;255;0m'
 RGB_BLUE='\033[38;2;0;0;255m'
@@ -30,48 +37,81 @@ RGB_GOLD='\033[38;2;255;215;0m'
 RGB_WHITE='\033[38;2;255;255;255m'
 RGB_LIME='\033[38;2;50;205;50m'
 RGB_TEAL='\033[38;2;0;128;128m'
+RGB_CORAL='\033[38;2;255;127;80m'
 
-# Bold variants
 BOLD='\033[1m'
 DIM='\033[2m'
 BLINK='\033[5m'
 RESET='\033[0m'
 
 # ============================================
-# RGB RAINBOW FUNCTION
+# ANIMATED RGB FUNCTIONS
 # ============================================
 
-rainbow_text() {
+get_term_size() {
+    local cols=$(tput cols 2>/dev/null || echo 80)
+    local lines=$(tput lines 2>/dev/null || echo 24)
+    echo "$cols $lines"
+}
+
+animate_rainbow() {
     local text="$1"
+    local delay="${2:-0.02}"
+    local cycles="${2:-2}"
+    
     local colors=(
-        "38;2;255;0;0"      # Red
-        "38;2;255;165;0"    # Orange
-        "38;2;255;255;0"    # Yellow
-        "38;2;0;255;0"      # Green
-        "38;2;0;255;255"    # Cyan
-        "38;2;0;0;255"      # Blue
-        "38;2;255;0;255"    # Purple
+        "38;2;255;0;0" "38;2;255;50;0" "38;2;255;100;0" "38;2;255;150;0"
+        "38;2;255;200;0" "38;2;255;255;0" "38;2;200;255;0" "38;2;150;255;0"
+        "38;2;100;255;0" "38;2;50;255;0" "38;2;0;255;0" "38;2;0;255;50"
+        "38;2;0;255;100" "38;2;0;255;150" "38;2;0;255;200" "38;2;0;255;255"
+        "38;2;0;200;255" "38;2;0;150;255" "38;2;0;100;255" "38;2;0;50;255"
+        "38;2;0;0;255" "38;2;50;0;255" "38;2;100;0;255" "38;2;150;0;255"
+        "38;2;200;0;255" "38;2;255;0;255" "38;2;255;0;200" "38;2;255;0;150"
+        "38;2;255;0;100" "38;2;255;0;50"
     )
+    
     local len=${#text}
     local color_count=${#colors[@]}
     
-    for (( i=0; i<len; i++ )); do
-        local char="${text:$i:1}"
-        local color_idx=$((i % color_count))
-        echo -ne "\033[${colors[$color_idx]}m$char"
+    for (( cycle=0; cycle<cycles; cycle++ )); do
+        for (( start=0; start<len; start++ )); do
+            echo -ne "\r\033[K"
+            for (( i=0; i<len; i++ )); do
+                local char="${text:$i:1}"
+                local color_idx=$(((i + start + cycle * 5) % color_count))
+                echo -ne "\033[${colors[$color_idx]}m$char"
+            done
+            echo -ne "\033[0m"
+            sleep "$delay"
+        done
     done
-    echo -e "\033[0m"
+}
+
+breathing_glow() {
+    local text="$1"
+    local cycles="${2:-3}"
+    
+    for (( i=0; i<cycles; i++ )); do
+        echo -ne "\r\033[K"
+        echo -e "\033[38;2;255;215;0m${text}\033[0m"
+        sleep 0.3
+        echo -ne "\r\033[K"
+        echo -e "\033[38;2;100;80;0m${text}\033[0m"
+        sleep 0.3
+    done
 }
 
 # ============================================
-# BANNER WITH RGB EFFECTS
+# RESPONSIVE LOGO
 # ============================================
 
-print_rgb_banner() {
+print_xmb_logo() {
+    local cols=$(tput cols 2>/dev/null || echo 80)
+    local lines=$(tput lines 2>/dev/null || echo 24)
+    
     clear
     
-    # RGB animated logo
-    local logo=(
+    local logo_lines=(
         "  ██╗  ██╗███╗   ███╗██████╗  █████╗  █████╗  ██████╗ "
         "  ╚██╗██╔╝████╗ ████║██╔══██╗██╔══██╗██╔══██╗╚════██╗"
         "   ╚███╔╝ ██╔████╔██║██████╔╝███████║███████║ █████╔╝"
@@ -87,55 +127,54 @@ print_rgb_banner() {
         "  ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝ "
     )
     
-    # Animate each line with rainbow effect
-    for line in "${logo[@]}"; do
-        rainbow_text "$line"
+    for line in "${logo_lines[@]}"; do
+        animate_rainbow "$line" 0.01 1
         echo ""
-        sleep 0.08
+        sleep 0.05
     done
     
-    # Subtitle with glowing effect
     echo -e ""
-    echo -e "${BOLD}${RGB_GOLD}   🚗 Car Parking Multiplayer Script Manager v1.0${RESET}"
+    breathing_glow "   🚗 Car Parking Multiplayer Script Manager ${XMB_VERSION}" 3
     echo -e "${DIM}${RGB_CYAN}   ───────────────────────────────────────────────────────${RESET}"
     echo -e ""
 }
 
 # ============================================
-# LOADING SCREEN WITH PROGRESS BAR
+# ADVANCED LOADING SCREEN
 # ============================================
 
-loading_screen() {
+advanced_loading() {
     clear
+    print_xmb_logo
     
-    # Animated spinner
+    local cols=$(tput cols 2>/dev/null || echo 80)
+    local center_pad=$(( (cols - 50) / 2 ))
+    
+    echo -e "${BOLD}${RGB_CYAN}"
+    printf "%${center_pad}s" ""
+    echo "  ╔══════════════════════════════════════════════════════╗"
+    printf "%${center_pad}s" ""
+    echo "  ║${BOLD}${RGB_WHITE}              LOADING XMB 420 ${XMB_VERSION}                    ${BOLD}${RGB_CYAN}║"
+    printf "%${center_pad}s" ""
+    echo "  ╚══════════════════════════════════════════════════════╝"
+    echo -e "${RESET}"
+    echo ""
+    
+    local total=60
     local spinner=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
-    
-    # Print banner with rainbow
-    print_rgb_banner
-    
-    echo -e "${BOLD}${RGB_CYAN}   ╔═══════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${RGB_CYAN}   ║${RESET}${BOLD}${RGB_WHITE}              INITIALIZING XMB 420...              ${RESET}${BOLD}${RGB_CYAN}║${RESET}"
-    echo -e "${BOLD}${RGB_CYAN}   ╚═══════════════════════════════════════════════════╝${RESET}"
-    echo -e ""
-    
-    # Progress bar with RGB gradient
-    local total=50
-    local modules=("Core" "Network" "Scripts" "Encryption" "UI" "Tools" "Config" "Ready")
+    local modules=("Core" "Network" "Scripts" "Encryption" "UI" "Tools" "Config" "Social" "Premium" "Ready")
     
     for i in $(seq 0 $total); do
         local percent=$((i * 100 / total))
-        local filled=$((i * 30 / total))
+        local filled=$((i * 35 / total))
         local bar=""
         
-        # Calculate RGB gradient (red -> yellow -> green -> cyan)
-        local r=$((255 - (percent * 255 / 100)))
-        local g=$((percent * 255 / 100))
-        local b=$((50 - (percent * 50 / 100)))
-        if [ $b -lt 0 ]; then b=0; fi
+        local hue=$((i * 6))
+        local r=$((128 + 127 * (1 + 0.5 * (hue / 360))))
+        local g=$((128 + 127 * (1 + 0.5 * ((hue + 120) / 360))))
+        local b=$((128 + 127 * (1 + 0.5 * ((hue + 240) / 360))))
         
-        # Build progress bar
-        for j in $(seq 1 30); do
+        for j in $(seq 1 35); do
             if [ $j -le $filled ]; then
                 bar="${bar}█"
             else
@@ -143,23 +182,20 @@ loading_screen() {
             fi
         done
         
-        # Module name
         local mod_idx=$((i * ${#modules[@]} / total))
         if [ $mod_idx -ge ${#modules[@]} ]; then
             mod_idx=$((${#modules[@]} - 1))
         fi
         local module_name="${modules[$mod_idx]}"
         
-        # Spinner animation
         local spin_idx=$((i % ${#spinner[@]}))
-        echo -ne "\r   ${spinner[$spin_idx]}  \033[38;2;${r};${g};${b}m[${bar}] ${percent}% - ${module_name}\033[0m"
+        printf "\r   ${spinner[$spin_idx]}  \033[38;2;${r};${g};${b}m[${bar}] ${percent}%% - ${module_name}\033[0m"
         
-        # Variable speed for realism
         if [ $i -lt 10 ]; then
-            sleep 0.12
+            sleep 0.15
         elif [ $i -lt 25 ]; then
-            sleep 0.07
-        elif [ $i -lt 40 ]; then
+            sleep 0.08
+        elif [ $i -lt 45 ]; then
             sleep 0.05
         else
             sleep 0.03
@@ -168,152 +204,158 @@ loading_screen() {
     
     echo -e ""
     echo -e ""
-    echo -e "${BOLD}${RGB_GREEN}   ✅ XMB 420 Ready!${RESET}"
+    echo -e "${BOLD}${RGB_GREEN}   ✅ XMB 420 ${XMB_VERSION} Successfully Loaded!${RESET}"
+    echo -e ""
+    
+    echo -e "${BOLD}${RGB_GOLD}   ──── CONNECT WITH US ────${RESET}"
+    echo -e ""
+    echo -e "   ${RGB_CYAN}📱 GitHub:${RESET}   https://github.com/H3X-cpm/XMB-420"
+    echo -e "   ${RGB_PINK}🐦 Twitter:${RESET}   https://twitter.com/H3X_cpm"
+    echo -e "   ${RGB_PURPLE}📺 YouTube:${RESET}  https://youtube.com/@H3X-cpm"
+    echo -e "   ${RGB_ORANGE}💬 Discord:${RESET}  https://discord.gg/H3X-cpm"
+    echo -e "   ${RGB_RED}📱 Telegram:${RESET}  https://t.me/H3X_cpm"
+    echo -e "   ${RGB_GREEN}☕ Donate:${RESET}    https://ko-fi.com/H3X-cpm"
+    echo -e "   ${RGB_CORAL}❤️ Patreon:${RESET}  https://patreon.com/H3X-cpm"
+    echo -e "   ${RGB_GOLD}💎 Premium:${RESET}   Contact @H3X_cpm on Telegram"
+    
+    echo -e ""
     echo -e "${DIM}${RGB_CYAN}   ───────────────────────────────────────────────────────${RESET}"
-    sleep 1
+    sleep 2
 }
 
 # ============================================
-# CHECK AND FIX TERMUX REPO
+# DOWNLOAD SCRIPTS FROM GITHUB
 # ============================================
 
-fix_termux_repo() {
-    echo -e "\n${RGB_YELLOW}[*] Checking Termux repositories...${RESET}"
+download_scripts_from_github() {
+    echo -e "\n${RGB_CYAN}[*] Checking for available scripts on GitHub...${RESET}"
+    echo ""
     
-    # Check if termux-change-repo exists
-    if command -v termux-change-repo &> /dev/null; then
-        echo -e "${RGB_CYAN}[!] Please select a working mirror if prompted${RESET}"
-        sleep 2
-        termux-change-repo
-    fi
+    local versions=("4.9.10" "4.9.11" "4.9.12" "4.9.13" "5.0.0" "5.1.0" "5.2.0" "5.3.0")
+    local script_names=("money" "speed" "unlock" "gems" "noclip" "xp" "upgrades" "aim" "SeKoPrimeCP1-2")
     
-    # Update package lists
-    echo -e "${RGB_YELLOW}[*] Updating package lists...${RESET}"
-    pkg update -y
+    local script_dir="$HOME/.xmb420/downloads"
+    mkdir -p "$script_dir"
     
-    # Try to fix mirrors if update fails
-    if [ $? -ne 0 ]; then
-        echo -e "${RGB_RED}[!] Update failed. Trying to fix mirrors...${RESET}"
-        echo -e "${RGB_YELLOW}[*] Please select a mirror:${RESET}"
-        echo -e "  ${RGB_GREEN}1.${RESET} https://mirror.termux.org/termux/"
-        echo -e "  ${RGB_GREEN}2.${RESET} https://packages.termux.org/apt/"
-        echo -e "  ${RGB_GREEN}3.${RESET} Skip (use current)"
-        read -p "Choose mirror: " mirror_choice
-        
-        case $mirror_choice in
-            1)
-                echo -e "${RGB_YELLOW}[*] Setting mirror to termux.org...${RESET}"
-                sed -i 's|https://[^/]*/termux|https://mirror.termux.org/termux|g' $PREFIX/etc/apt/sources.list
-                pkg update -y
-                ;;
-            2)
-                echo -e "${RGB_YELLOW}[*] Setting mirror to packages.termux.org...${RESET}"
-                sed -i 's|https://[^/]*/termux|https://packages.termux.org/apt|g' $PREFIX/etc/apt/sources.list
-                pkg update -y
-                ;;
-            *)
-                echo -e "${RGB_YELLOW}[*] Skipping mirror change${RESET}"
-                ;;
-        esac
-    fi
-}
-
-# ============================================
-# INSTALL LUA PROPERLY
-# ============================================
-
-install_lua() {
-    echo -e "\n${RGB_YELLOW}[*] Installing Lua...${RESET}"
+    local total_downloaded=0
+    local total_skipped=0
     
-    # Try different Lua package names
-    local lua_packages=("lua" "lua53" "lua51" "lua-5.3" "lua-5.4")
-    
-    for pkg in "${lua_packages[@]}"; do
-        echo -e "${RGB_CYAN}[*] Trying: $pkg${RESET}"
-        if pkg install -y "$pkg" 2>/dev/null; then
-            echo -e "${RGB_GREEN}[✓] Successfully installed: $pkg${RESET}"
-            return 0
-        fi
+    for version in "${versions[@]}"; do
+        for script in "${script_names[@]}"; do
+            local url="https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/scripts/${version}/${script}.lua"
+            local output="${script_dir}/${script}.lua"
+            
+            if curl -s --head "$url" | head -n 1 | grep -q "200"; then
+                if [ ! -f "$output" ]; then
+                    echo -e "   ${RGB_YELLOW}⬇${RESET} Downloading ${script}.lua for v${version}..."
+                    curl -s "$url" -o "$output"
+                    ((total_downloaded++))
+                else
+                    ((total_skipped++))
+                fi
+            fi
+        done
     done
     
-    echo -e "${RGB_RED}[✗] Failed to install Lua!${RESET}"
-    echo -e "${RGB_YELLOW}[!] Please manually install: pkg install lua${RESET}"
-    return 1
+    if [ $total_downloaded -gt 0 ]; then
+        echo -e ""
+        echo -e "   ${RGB_GREEN}✅ Downloaded ${total_downloaded} new scripts${RESET}"
+    fi
+    if [ $total_skipped -gt 0 ]; then
+        echo -e "   ${RGB_CYAN}ℹ${RESET} ${total_skipped} scripts already exist (skipped)"
+    fi
+    if [ $total_downloaded -eq 0 ] && [ $total_skipped -eq 0 ]; then
+        echo -e "   ${RGB_YELLOW}!${RESET} No scripts found on GitHub"
+    fi
+    
+    echo ""
+}
+
+# ============================================
+# LIST AVAILABLE SCRIPTS
+# ============================================
+
+list_available_scripts() {
+    echo -e "\n${RGB_CYAN}[*] Available scripts in downloads folder:${RESET}"
+    echo ""
+    
+    local script_dir="$HOME/.xmb420/downloads"
+    if [ -d "$script_dir" ]; then
+        local count=0
+        for file in "$script_dir"/*.lua; do
+            if [ -f "$file" ]; then
+                local name=$(basename "$file" .lua)
+                echo -e "   ${RGB_GREEN}✓${RESET} $name.lua"
+                ((count++))
+            fi
+        done
+        if [ $count -eq 0 ]; then
+            echo -e "   ${RGB_YELLOW}!${RESET} No scripts downloaded yet"
+            echo -e "   ${RGB_CYAN}ℹ${RESET} Scripts will be downloaded from GitHub when you select option 1"
+        else
+            echo -e ""
+            echo -e "   ${RGB_GREEN}Total: $count scripts${RESET}"
+        fi
+    else
+        echo -e "   ${RGB_YELLOW}!${RESET} Downloads folder not found"
+    fi
+    
+    echo ""
+}
+
+# ============================================
+# CHECK FOR UPDATES
+# ============================================
+
+check_for_updates() {
+    echo -e "\n${RGB_CYAN}[*] Checking for XMB 420 updates...${RESET}"
+    
+    local current_version="${XMB_VERSION}"
+    local latest_version=$(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/version.txt 2>/dev/null)
+    
+    if [ -n "$latest_version" ] && [ "$latest_version" != "$current_version" ]; then
+        echo -e "   ${RGB_YELLOW}!${RESET} New version available: ${latest_version}"
+        echo -e "   ${RGB_CYAN}ℹ${RESET} Current version: ${current_version}"
+        echo -e "   ${RGB_GREEN}➜${RESET} Run: bash <(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/xmb420.sh)"
+    else
+        echo -e "   ${RGB_GREEN}✓${RESET} You have the latest version: ${current_version}"
+    fi
+    
+    echo ""
 }
 
 # ============================================
 # MAIN EXECUTION
 # ============================================
 
-# Print banner with RGB animation
-print_rgb_banner
-sleep 1.5
+# Print version info
+echo -e "${BOLD}${RGB_CYAN}XMB 420 ${XMB_VERSION} - ${XMB_RELEASE}${RESET}"
+echo -e "${DIM}${RGB_CYAN}Author: ${XMB_AUTHOR}${RESET}"
+echo -e ""
 
-# Show loading screen with progress
-loading_screen
+print_xmb_logo
+sleep 1
 
-# ============================================
-# FIX REPOSITORIES
-# ============================================
-
-fix_termux_repo
+advanced_loading
 
 # ============================================
 # DEPENDENCY CHECK
 # ============================================
 
 echo -e "\n${RGB_BLUE}[*] Checking dependencies...${RESET}"
-
-deps=("curl" "openssl" "git" "python" "lua")
+deps=("curl" "openssl" "lua" "luajit" "git")
 missing=()
-
 for dep in "${deps[@]}"; do
     if ! command -v "$dep" &> /dev/null; then
         missing+=("$dep")
     fi
 done
 
-# Special check for lua (might be installed as lua53)
-if ! command -v lua &> /dev/null; then
-    if command -v lua5.3 &> /dev/null; then
-        echo -e "${RGB_CYAN}[!] Lua found as lua5.3, creating alias...${RESET}"
-        alias lua='lua5.3'
-    elif command -v lua53 &> /dev/null; then
-        echo -e "${RGB_CYAN}[!] Lua found as lua53, creating alias...${RESET}"
-        alias lua='lua53'
-    else
-        missing+=("lua")
-    fi
-fi
-
 if [ ${#missing[@]} -ne 0 ]; then
     echo -e "${RGB_YELLOW}[!] Missing: ${missing[*]}${RESET}"
     echo -e "${RGB_BLUE}[*] Installing...${RESET}"
-    
-    for dep in "${missing[@]}"; do
-        if [ "$dep" == "lua" ]; then
-            install_lua
-        else
-            pkg install -y "$dep"
-        fi
-    done
-fi
-
-# Verify Lua is installed
-if ! command -v lua &> /dev/null; then
-    if command -v lua5.3 &> /dev/null; then
-        alias lua='lua5.3'
-        echo -e "${RGB_GREEN}[✓] Lua available as lua5.3${RESET}"
-    elif command -v lua53 &> /dev/null; then
-        alias lua='lua53'
-        echo -e "${RGB_GREEN}[✓] Lua available as lua53${RESET}"
-    else
-        echo -e "${RGB_RED}[✗] Lua is still not installed!${RESET}"
-        echo -e "${RGB_YELLOW}[!] Please run: pkg install lua${RESET}"
-        echo -e "${RGB_YELLOW}[!] Or try: pkg install lua53${RESET}"
-        echo -e "\n${RGB_YELLOW}[!] Press Enter to continue anyway...${RESET}"
-        read
-    fi
+    pkg update -y
+    pkg install "${missing[@]}" -y
 fi
 
 echo -e "${RGB_GREEN}[✓] All dependencies installed${RESET}"
@@ -327,32 +369,33 @@ mkdir -p "$HOME/.xmb420/scripts"
 mkdir -p "$HOME/.xmb420/encrypted"
 mkdir -p "$HOME/.xmb420/downloads"
 mkdir -p "$HOME/.xmb420/tools"
+mkdir -p "$HOME/.xmb420/paid"
+
+# ============================================
+# CHECK FOR UPDATES
+# ============================================
+
+check_for_updates
+
+# ============================================
+# DOWNLOAD SCRIPTS FROM GITHUB
+# ============================================
+
+download_scripts_from_github
+
+# ============================================
+# LIST AVAILABLE SCRIPTS
+# ============================================
+
+list_available_scripts
 
 # ============================================
 # LAUNCH MAIN MENU
 # ============================================
 
-echo -e "\n${RGB_CYAN}[*] Launching XMB 420...${RESET}"
+echo -e "${RGB_CYAN}[*] Launching XMB 420 ${XMB_VERSION}...${RESET}"
 sleep 1
 
-# Check if lua command exists
-if command -v lua &> /dev/null; then
-    lua <(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/menu.lua)
-else
-    # Try alternative lua commands
-    if command -v lua5.3 &> /dev/null; then
-        lua5.3 <(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/menu.lua)
-    elif command -v lua53 &> /dev/null; then
-        lua53 <(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/menu.lua)
-    else
-        echo -e "${RGB_RED}[✗] Cannot find Lua!${RESET}"
-        echo -e "${RGB_YELLOW}[!] Please install Lua manually:${RESET}"
-        echo -e "  ${RGB_GREEN}pkg install lua${RESET}"
-        echo -e "  ${RGB_GREEN}pkg install lua53${RESET}"
-        echo -e "\n${RGB_YELLOW}[!] Then run:${RESET}"
-        echo -e "  ${RGB_GREEN}bash $0${RESET}"
-        exit 1
-    fi
-fi
+lua <(curl -s https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/menu.lua)
 
 exit 0
