@@ -143,6 +143,8 @@ local function downloadScripts()
     local download_dir = home .. "/.xmb420/downloads/"
     local count = 0
     
+    os.execute("mkdir -p " .. download_dir)
+    
     for _, script in ipairs(script_names) do
         local url = string.format(
             "https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/scripts/%s/%s.lua",
@@ -151,7 +153,7 @@ local function downloadScripts()
         local output = download_dir .. script .. ".lua"
         
         io.write("   " .. colors.cyan .. "⬇" .. colors.reset .. " Downloading " .. script .. ".lua...")
-        local cmd = string.format("curl -s '%s' -o '%s'", url, output)
+        local cmd = string.format("curl -s -L '%s' -o '%s'", url, output)
         os.execute(cmd)
         
         local file = io.open(output, "r")
@@ -336,7 +338,7 @@ local function cpmCheats()
     if not io.open(local_path, "r") then
         print(colors.yellow .. "[*] Downloading CPM Cheats..." .. colors.reset)
         local url = "https://raw.githubusercontent.com/Rickdevsolutions/cpm2/main/cpmcheats.py"
-        os.execute(string.format("curl -s '%s' -o '%s'", url, local_path))
+        os.execute(string.format("curl -s -L '%s' -o '%s'", url, local_path))
         os.execute("chmod +x " .. local_path)
         print(colors.green .. "[✓] Downloaded!" .. colors.reset)
         print("")
