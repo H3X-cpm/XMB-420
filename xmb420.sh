@@ -30,18 +30,18 @@ DIM='\033[2m'
 RESET='\033[0m'
 
 # ============================================
-# SIMPLE RAINBOW FUNCTION (No complex math)
+# SIMPLE RAINBOW FUNCTION
 # ============================================
 
 rainbow_text() {
     local text="$1"
     local colors=(
-        "\033[31m"  # Red
-        "\033[33m"  # Yellow
-        "\033[32m"  # Green
-        "\033[36m"  # Cyan
-        "\033[34m"  # Blue
-        "\033[35m"  # Purple
+        "\033[31m"
+        "\033[33m"
+        "\033[32m"
+        "\033[36m"
+        "\033[34m"
+        "\033[35m"
     )
     local len=${#text}
     local color_count=${#colors[@]}
@@ -196,6 +196,42 @@ check_updates() {
 }
 
 # ============================================
+# DOWNLOAD AND RUN MENU
+# ============================================
+
+download_and_run_menu() {
+    echo -e "${CYAN}[*] Launching XMB 420 ${XMB_VERSION}...${RESET}"
+    sleep 1
+    
+    # Download menu.lua to a temporary file
+    local menu_url="https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/menu.lua"
+    local menu_file="/data/data/com.termux/files/usr/tmp/xmb_menu.lua"
+    
+    echo -e "${CYAN}[*] Downloading menu...${RESET}"
+    
+    # Try curl first
+    if command -v curl &> /dev/null; then
+        curl -s -L "$menu_url" -o "$menu_file"
+    else
+        # Fallback to wget
+        wget -q -O "$menu_file" "$menu_url"
+    fi
+    
+    # Check if download succeeded
+    if [ -f "$menu_file" ]; then
+        echo -e "${GREEN}[✓] Menu loaded successfully${RESET}"
+        sleep 1
+        lua "$menu_file"
+    else
+        echo -e "${RED}[✗] Failed to download menu.lua${RESET}"
+        echo -e "${YELLOW}[!] Trying alternative method...${RESET}"
+        
+        # Alternative: run directly from curl pipe
+        lua <(curl -s -L "$menu_url")
+    fi
+}
+
+# ============================================
 # MAIN
 # ============================================
 
@@ -215,13 +251,7 @@ create_directories
 # Check updates
 check_updates
 
-# Launch menu
-echo -e "${CYAN}[*] Launching XMB 420 ${XMB_VERSION}...${RESET}"
-sleep 1
-
-# Download and run menu.lua
-MENU_URL="https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/menu.lua"
-curl -s "$MENU_URL" -o /tmp/xmb_menu.lua
-lua /tmp/xmb_menu.lua
+# Download and run menu
+download_and_run_menu
 
 exit 0
