@@ -1,7 +1,11 @@
 -- XMB 420 - Main Menu
 -- Car Parking Multiplayer Script Manager
+-- Version: v2.9
 -- GitHub: H3X-cpm/XMB-420
--- With RGB Color Support
+
+local XMB_VERSION = "v2.9"
+local XMB_RELEASE = "September 2026"
+local XMB_AUTHOR = "H3X-cpm"
 
 local function clearScreen()
     os.execute("clear")
@@ -14,7 +18,6 @@ local colors = {
     dim = "\27[2m",
     blink = "\27[5m",
     
-    -- Standard colors
     red = "\27[31m",
     green = "\27[32m",
     yellow = "\27[33m",
@@ -23,7 +26,6 @@ local colors = {
     cyan = "\27[36m",
     white = "\27[37m",
     
-    -- RGB 24-bit colors
     rgb_red = "\27[38;2;255;0;0m",
     rgb_green = "\27[38;2;0;255;0m",
     rgb_blue = "\27[38;2;0;0;255m",
@@ -42,13 +44,13 @@ local colors = {
 
 local function printRainbow(text)
     local rainbow_colors = {
-        "\27[38;2;255;0;0m",      -- Red
-        "\27[38;2;255;165;0m",    -- Orange
-        "\27[38;2;255;255;0m",    -- Yellow
-        "\27[38;2;0;255;0m",      -- Green
-        "\27[38;2;0;255;255m",    -- Cyan
-        "\27[38;2;0;0;255m",      -- Blue
-        "\27[38;2;255;0;255m",    -- Purple
+        "\27[38;2;255;0;0m",
+        "\27[38;2;255;165;0m",
+        "\27[38;2;255;255;0m",
+        "\27[38;2;0;255;0m",
+        "\27[38;2;0;255;255m",
+        "\27[38;2;0;0;255m",
+        "\27[38;2;255;0;255m",
     }
     
     for i = 1, #text do
@@ -62,7 +64,6 @@ end
 local function printHeader()
     clearScreen()
     
-    -- ASCII Art with RGB colors
     local logo_lines = {
         "  ██╗  ██╗███╗   ███╗██████╗  █████╗  █████╗  ██████╗ ",
         "  ╚██╗██╔╝████╗ ████║██╔══██╗██╔══██╗██╔══██╗╚════██╗",
@@ -85,8 +86,41 @@ local function printHeader()
     end
     
     print("")
-    print(colors.bold .. colors.rgb_gold .. "   🚗 Car Parking Multiplayer Script Manager v1.0" .. colors.reset)
+    print(colors.bold .. colors.rgb_gold .. "   🚗 Car Parking Multiplayer Script Manager " .. XMB_VERSION .. colors.reset)
     print(colors.dim .. colors.rgb_cyan .. "   ───────────────────────────────────────────────────────" .. colors.reset)
+    print(colors.dim .. colors.rgb_teal .. "   Release: " .. XMB_RELEASE .. " | Author: " .. XMB_AUTHOR .. colors.reset)
+    print("")
+end
+
+local function listDownloadedScripts()
+    print(colors.rgb_cyan .. "\n  📂 Downloaded Scripts:" .. colors.reset)
+    print("")
+    
+    local home = os.getenv("HOME")
+    local script_dir = home .. "/.xmb420/downloads/"
+    local cmd = "ls -1 " .. script_dir .. "*.lua 2>/dev/null"
+    local handle = io.popen(cmd)
+    local scripts = {}
+    
+    if handle then
+        for line in handle:lines() do
+            table.insert(scripts, line)
+        end
+        handle:close()
+    end
+    
+    if #scripts == 0 then
+        print("  " .. colors.rgb_yellow .. "No scripts found in downloads folder" .. colors.reset)
+        print("  " .. colors.dim .. "Scripts will download from GitHub when you select option 1" .. colors.reset)
+    else
+        for i, script in ipairs(scripts) do
+            local name = script:match("([^/]+)%.lua$")
+            print("  " .. colors.rgb_green .. string.format("%2d.", i) .. colors.reset .. " " .. name .. ".lua")
+        end
+        print("")
+        print("  " .. colors.rgb_green .. "Total: " .. #scripts .. " scripts" .. colors.reset)
+    end
+    
     print("")
 end
 
@@ -96,20 +130,26 @@ local function showMainMenu()
     print(colors.bold .. colors.rgb_cyan .. "\n  📦 MAIN MENU" .. colors.reset)
     print("")
     print("  " .. colors.rgb_green .. "1." .. colors.reset .. " 📥 Download CPM Scripts from GitHub")
-    print("  " .. colors.rgb_green .. "2." .. colors.reset .. " 🔐 Encrypt Your Own Lua Script")
-    print("  " .. colors.rgb_green .. "3." .. colors.reset .. " 🔓 Decrypt Lua Script")
-    print("  " .. colors.rgb_green .. "4." .. colors.reset .. " 📂 View Downloaded Scripts")
+    print("  " .. colors.rgb_green .. "2." .. colors.reset .. " 📂 View Downloaded Scripts")
+    print("  " .. colors.rgb_green .. "3." .. colors.reset .. " 🔐 Encrypt Your Own Lua Script")
+    print("  " .. colors.rgb_green .. "4." .. colors.reset .. " 🔓 Decrypt Lua Script")
     print("  " .. colors.rgb_green .. "5." .. colors.reset .. " 📁 View Encrypted Scripts")
     print("  " .. colors.rgb_green .. "6." .. colors.reset .. " ⚙️  Settings")
     print("  " .. colors.rgb_gold .. "7." .. colors.reset .. " 🐍 CPM Cheats (Python)")
-    print("  " .. colors.rgb_green .. "8." .. colors.reset .. " ℹ️  About")
+    print("  " .. colors.rgb_pink .. "8." .. colors.reset .. " 🔥 Modded CPM APKs (Coming Soon)")
+    print("  " .. colors.rgb_gold .. "9." .. colors.reset .. " 💎 Premium Scripts")
+    print("  " .. colors.rgb_green .. "10." .. colors.reset .. " ℹ️  About")
     print("  " .. colors.rgb_red .. "0." .. colors.reset .. " 🚪 Exit")
     print("")
+    print(colors.dim .. colors.rgb_cyan .. "  ───────────────────────────────────────────────────────" .. colors.reset)
+    
+    listDownloadedScripts()
+    
     print(colors.dim .. colors.rgb_cyan .. "  ───────────────────────────────────────────────────────" .. colors.reset)
     io.write(colors.bold .. colors.rgb_blue .. "  ➜ Choose option: " .. colors.reset)
 end
 
--- FUNCTION: Download CPM Scripts
+-- FUNCTION: Download CPM Scripts from GitHub
 local function downloadScripts()
     clearScreen()
     printHeader()
@@ -157,19 +197,73 @@ local function downloadScripts()
         return
     end
     
-    local url = string.format(
-        "https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/scripts/%s/menu.lua",
-        version
-    )
+    print("\n" .. colors.rgb_yellow .. "[*] Downloading scripts for version " .. version .. "..." .. colors.reset)
     
-    print("\n" .. colors.rgb_yellow .. "[*] Loading scripts for version " .. version .. "..." .. colors.reset)
-    os.execute("sleep 1")
+    local script_names = {"money", "speed", "unlock", "gems", "noclip", "xp", "upgrades", "aim", "SeKoPrimeCP1-2"}
+    local home = os.getenv("HOME")
+    local download_dir = home .. "/.xmb420/downloads/"
+    local count = 0
     
-    local cmd = string.format(
-        "lua <(curl -s '%s') '%s'",
-        url, version
-    )
+    for _, script in ipairs(script_names) do
+        local url = string.format(
+            "https://raw.githubusercontent.com/H3X-cpm/XMB-420/main/scripts/%s/%s.lua",
+            version, script
+        )
+        local output = download_dir .. script .. ".lua"
+        
+        print("   " .. colors.rgb_cyan .. "⬇" .. colors.reset .. " Downloading " .. script .. ".lua...")
+        local cmd = string.format("curl -s '%s' -o '%s'", url, output)
+        os.execute(cmd)
+        
+        local file = io.open(output, "r")
+        if file then
+            file:close()
+            print("   " .. colors.rgb_green .. "✓" .. colors.reset .. " Downloaded: " .. script .. ".lua")
+            count = count + 1
+        else
+            print("   " .. colors.rgb_red .. "✗" .. colors.reset .. " Failed: " .. script .. ".lua")
+        end
+        os.execute("sleep 0.1")
+    end
+    
+    print("")
+    print(colors.rgb_green .. "[✓] Downloaded " .. count .. " scripts for version " .. version .. colors.reset)
+    print("\n" .. colors.rgb_cyan .. "Press Enter to continue..." .. colors.reset)
+    io.read()
+end
+
+-- FUNCTION: View Downloaded Scripts
+local function viewDownloaded()
+    clearScreen()
+    printHeader()
+    print("\n" .. colors.rgb_yellow .. "[!] DOWNLOADED SCRIPTS" .. colors.reset .. "\n")
+    print(colors.rgb_cyan .. "  Location: ~/.xmb420/downloads/" .. colors.reset .. "\n")
+    
+    local home = os.getenv("HOME")
+    local script_dir = home .. "/.xmb420/downloads/"
+    
+    local cmd = "ls -la " .. script_dir .. "*.lua 2>/dev/null || echo '  No scripts found'"
     os.execute(cmd)
+    
+    print("\n" .. colors.rgb_cyan .. "Press Enter to continue..." .. colors.reset)
+    io.read()
+end
+
+-- FUNCTION: View Encrypted Scripts
+local function viewEncrypted()
+    clearScreen()
+    printHeader()
+    print("\n" .. colors.rgb_yellow .. "[!] ENCRYPTED SCRIPTS" .. colors.reset .. "\n")
+    print(colors.rgb_cyan .. "  Location: ~/.xmb420/encrypted/" .. colors.reset .. "\n")
+    
+    local home = os.getenv("HOME")
+    local script_dir = home .. "/.xmb420/encrypted/"
+    
+    local cmd = "ls -la " .. script_dir .. "*.enc 2>/dev/null || echo '  No encrypted files found'"
+    os.execute(cmd)
+    
+    print("\n" .. colors.rgb_cyan .. "Press Enter to continue..." .. colors.reset)
+    io.read()
 end
 
 -- FUNCTION: Encrypt Lua Script
@@ -307,28 +401,6 @@ local function decryptScript()
     io.read()
 end
 
--- FUNCTION: View Downloaded Scripts
-local function viewDownloaded()
-    clearScreen()
-    printHeader()
-    print("\n" .. colors.rgb_yellow .. "[!] DOWNLOADED SCRIPTS" .. colors.reset .. "\n")
-    print(colors.rgb_cyan .. "  Location: ~/.xmb420/downloads/" .. colors.reset .. "\n")
-    os.execute("ls -la ~/.xmb420/downloads/ | grep -E '\\.(lua|enc)$' || echo '  No scripts found'")
-    print("\n" .. colors.rgb_cyan .. "Press Enter to continue..." .. colors.reset)
-    io.read()
-end
-
--- FUNCTION: View Encrypted Scripts
-local function viewEncrypted()
-    clearScreen()
-    printHeader()
-    print("\n" .. colors.rgb_yellow .. "[!] ENCRYPTED SCRIPTS" .. colors.reset .. "\n")
-    print(colors.rgb_cyan .. "  Location: ~/.xmb420/encrypted/" .. colors.reset .. "\n")
-    os.execute("ls -la ~/.xmb420/encrypted/ | grep '\\.enc$' || echo '  No encrypted files found'")
-    print("\n" .. colors.rgb_cyan .. "Press Enter to continue..." .. colors.reset)
-    io.read()
-end
-
 -- FUNCTION: Settings
 local function settings()
     clearScreen()
@@ -380,7 +452,6 @@ local function cpmCheats()
     print(colors.dim .. colors.rgb_cyan .. "  ───────────────────────────────────────────────────────" .. colors.reset)
     print("")
     
-    -- Check if Python is installed
     print(colors.rgb_yellow .. "[*] Checking Python installation..." .. colors.reset)
     local python_check = os.execute("command -v python3 >/dev/null 2>&1")
     if python_check ~= 0 then
@@ -389,25 +460,19 @@ local function cpmCheats()
         print(colors.rgb_yellow .. "[*] Install Python with:" .. colors.reset)
         print("  pkg install python python-pip -y")
         print("")
-        print(colors.rgb_yellow .. "[*] Then install dependencies:" .. colors.reset)
-        print("  pip3 install requests colorama")
-        print("")
         print(colors.rgb_cyan .. "Press Enter to continue..." .. colors.reset)
         io.read()
         return
     end
     print(colors.rgb_green .. "[✓] Python3 is installed" .. colors.reset)
     
-    -- Install required Python packages
     print(colors.rgb_yellow .. "[*] Installing Python dependencies..." .. colors.reset)
     os.execute("pip3 install requests colorama > /dev/null 2>&1")
     print(colors.rgb_green .. "[✓] Dependencies installed" .. colors.reset)
     print("")
     
-    -- Create directory for downloaded scripts
     os.execute("mkdir -p ~/.xmb420/tools")
     
-    -- Check if cpmcheats.py already exists locally
     local local_path = os.getenv("HOME") .. "/.xmb420/tools/cpmcheats.py"
     local file_check = io.open(local_path, "r")
     
@@ -436,7 +501,6 @@ local function cpmCheats()
         file_check:close()
         print(colors.rgb_green .. "[✓] CPM Cheats already downloaded!" .. colors.reset)
         
-        -- Check for updates
         print(colors.rgb_yellow .. "[*] Checking for updates..." .. colors.reset)
         local url = "https://raw.githubusercontent.com/Rickdevsolutions/cpm2/main/cpmcheats.py"
         local temp_path = os.getenv("HOME") .. "/.xmb420/tools/cpmcheats_temp.py"
@@ -459,7 +523,6 @@ local function cpmCheats()
     print(colors.dim .. colors.rgb_cyan .. "  ───────────────────────────────────────────────────────" .. colors.reset)
     print("")
     
-    -- Run the Python script
     os.execute("python3 " .. local_path)
     
     print("")
@@ -469,28 +532,118 @@ local function cpmCheats()
     io.read()
 end
 
+-- FUNCTION: Premium Scripts
+local function premiumScripts()
+    clearScreen()
+    printHeader()
+    print("\n" .. colors.rgb_gold .. "[!] 💎 PREMIUM SCRIPTS" .. colors.reset)
+    print(colors.dim .. colors.rgb_cyan .. "  ───────────────────────────────────────────────────────" .. colors.reset)
+    print("")
+    
+    print(colors.rgb_gold .. "  ╔══════════════════════════════════════════════════════╗" .. colors.reset)
+    print(colors.rgb_gold .. "  ║" .. colors.reset .. colors.bold .. colors.rgb_white .. "              💎 PREMIUM FEATURES                     " .. colors.rgb_gold .. "║" .. colors.reset)
+    print(colors.rgb_gold .. "  ╚══════════════════════════════════════════════════════╝" .. colors.reset)
+    print("")
+    
+    print(colors.rgb_cyan .. "  Premium Scripts Available:" .. colors.reset)
+    print("")
+    print("  " .. colors.rgb_gold .. "1." .. colors.reset .. " 💰 Premium Money Script")
+    print("  " .. colors.rgb_gold .. "2." .. colors.reset .. " 🚀 Premium Speed Script")
+    print("  " .. colors.rgb_gold .. "3." .. colors.reset .. " 🔓 Premium Unlock Script")
+    print("  " .. colors.rgb_gold .. "4." .. colors.reset .. " 🔥 Premium All-in-One Script")
+    print("  " .. colors.rgb_gold .. "5." .. colors.reset .. " 🌟 Premium VIP Features")
+    print("")
+    print(colors.rgb_pink .. "  ╔══════════════════════════════════════════════════════╗" .. colors.reset)
+    print(colors.rgb_pink .. "  ║" .. colors.reset .. colors.bold .. colors.rgb_white .. "         📱 HOW TO GET PREMIUM SCRIPTS              " .. colors.rgb_pink .. "║" .. colors.reset)
+    print(colors.rgb_pink .. "  ╚══════════════════════════════════════════════════════╝" .. colors.reset)
+    print("")
+    print(colors.rgb_yellow .. "  To get premium scripts, contact me on Telegram:" .. colors.reset)
+    print("")
+    print(colors.rgb_cyan .. "  📱 Telegram: @H3X_cpm" .. colors.reset)
+    print("  " .. colors.rgb_cyan .. "🔗 Link:" .. colors.reset .. " https://t.me/H3X_cpm")
+    print("")
+    print(colors.rgb_gold .. "  💰 Pricing:" .. colors.reset)
+    print("  • Single Script: $5")
+    print("  • Script Pack (5 scripts): $20")
+    print("  • VIP Lifetime Access: $50")
+    print("")
+    print(colors.rgb_green .. "  Payment Methods:" .. colors.reset)
+    print("  • PayPal")
+    print("  • Crypto (BTC, ETH, USDT)")
+    print("  • Gift Cards")
+    print("")
+    print(colors.rgb_orange .. "  ╔══════════════════════════════════════════════════════╗" .. colors.reset)
+    print(colors.rgb_orange .. "  ║" .. colors.reset .. colors.bold .. colors.rgb_white .. "            ⚠️ IMPORTANT NOTICE                      " .. colors.rgb_orange .. "║" .. colors.reset)
+    print(colors.rgb_orange .. "  ╚══════════════════════════════════════════════════════╝" .. colors.reset)
+    print("")
+    print(colors.rgb_red .. "  ❗ Premium scripts are for personal use only" .. colors.reset)
+    print(colors.rgb_red .. "  ❗ Do not share or redistribute" .. colors.reset)
+    print(colors.rgb_red .. "  ❗ Lifetime updates included" .. colors.reset)
+    print(colors.rgb_red .. "  ❗ Support included" .. colors.reset)
+    print("")
+    print(colors.rgb_cyan .. "  Press Enter to continue..." .. colors.reset)
+    io.read()
+end
+
+-- FUNCTION: Modded CPM APKs
+local function moddedAPKs()
+    clearScreen()
+    printHeader()
+    print("\n" .. colors.rgb_pink .. "[!] MODDED CPM APKs" .. colors.reset)
+    print(colors.dim .. colors.rgb_cyan .. "  ───────────────────────────────────────────────────────" .. colors.reset)
+    print("")
+    
+    print(colors.rgb_yellow .. "[!] Coming Soon in Version 3.0!" .. colors.reset)
+    print("")
+    print(colors.rgb_cyan .. "  Planned Features:" .. colors.reset)
+    print("  • Modded CPM 1 APKs")
+    print("  • Modded CPM 2 APKs")
+    print("  • Auto-Install Support")
+    print("  • Version Selection")
+    print("  • OBB Download")
+    print("  • Unlimited Money Mods")
+    print("  • All Cars Unlocked")
+    print("")
+    print(colors.rgb_gold .. "  Stay tuned for updates!" .. colors.reset)
+    print("")
+    print(colors.rgb_cyan .. "Press Enter to continue..." .. colors.reset)
+    io.read()
+end
+
 -- FUNCTION: About
 local function about()
     clearScreen()
     printHeader()
     print("\n" .. colors.rgb_gold .. "[!] ABOUT XMB 420" .. colors.reset)
-    print("\n  " .. colors.rgb_cyan .. "Version:" .. colors.reset .. " 1.0")
-    print("  " .. colors.rgb_cyan .. "Author:" .. colors.reset .. " H3X-cpm")
+    print("\n  " .. colors.rgb_cyan .. "Version:" .. colors.reset .. " " .. XMB_VERSION)
+    print("  " .. colors.rgb_cyan .. "Release:" .. colors.reset .. " " .. XMB_RELEASE)
+    print("  " .. colors.rgb_cyan .. "Author:" .. colors.reset .. " " .. XMB_AUTHOR)
     print("  " .. colors.rgb_cyan .. "GitHub:" .. colors.reset .. " https://github.com/H3X-cpm/XMB-420")
     print("\n  " .. colors.rgb_cyan .. "Description:" .. colors.reset)
     print("  Car Parking Multiplayer Script Manager")
     print("  Download pre-made scripts or encrypt your own")
     print("\n  " .. colors.rgb_cyan .. "Features:" .. colors.reset)
-    print("  • Download CPM scripts by version")
+    print("  • Download CPM scripts by version from GitHub")
     print("  • AES-256-CBC Encryption")
     print("  • Decrypt your own scripts")
     print("  • Organize scripts by game version")
     print("  • 9 scripts per version including SeKoPrimeCP1-2")
     print("  • CPM Cheats integration (Python)")
-    print("  • RGB TUI interface")
+    print("  • RGB Animated TUI interface")
+    print("  • Social links and donate options")
+    print("  • 💎 Premium scripts available via Telegram")
+    print("  • Modded CPM APKs (Coming Soon v3.0)")
     print("")
     print("  " .. colors.rgb_cyan .. "CPM Cheats Source:" .. colors.reset)
     print("  https://github.com/Rickdevsolutions/cpm2")
+    print("\n  " .. colors.rgb_cyan .. "Social Links:" .. colors.reset)
+    print("  • GitHub: https://github.com/H3X-cpm")
+    print("  • Twitter: https://twitter.com/H3X_cpm")
+    print("  • YouTube: https://youtube.com/@H3X-cpm")
+    print("  • Discord: https://discord.gg/H3X-cpm")
+    print("  • Telegram: https://t.me/H3X_cpm")
+    print("  • Ko-Fi: https://ko-fi.com/H3X-cpm")
+    print("  • Patreon: https://patreon.com/H3X-cpm")
     print("\n" .. colors.rgb_cyan .. "Press Enter to continue..." .. colors.reset)
     io.read()
 end
@@ -503,11 +656,11 @@ while true do
     if choice == "1" then
         downloadScripts()
     elseif choice == "2" then
-        encryptScript()
-    elseif choice == "3" then
-        decryptScript()
-    elseif choice == "4" then
         viewDownloaded()
+    elseif choice == "3" then
+        encryptScript()
+    elseif choice == "4" then
+        decryptScript()
     elseif choice == "5" then
         viewEncrypted()
     elseif choice == "6" then
@@ -515,10 +668,14 @@ while true do
     elseif choice == "7" then
         cpmCheats()
     elseif choice == "8" then
+        moddedAPKs()
+    elseif choice == "9" then
+        premiumScripts()
+    elseif choice == "10" then
         about()
     elseif choice == "0" then
         clearScreen()
-        print(colors.rgb_cyan .. "[!] Goodbye from XMB 420!" .. colors.reset .. "\n")
+        print(colors.rgb_cyan .. "[!] Goodbye from XMB 420 " .. XMB_VERSION .. "!" .. colors.reset .. "\n")
         os.exit(0)
     else
         print("\n" .. colors.rgb_red .. "[✗] Invalid option!" .. colors.reset)
