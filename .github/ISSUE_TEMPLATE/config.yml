@@ -1,0 +1,17 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📚 Questions & Discussion
+    url: https://github.com/H3X-cpm/XMB-420/discussions
+    about: Ask questions and get help from the community
+  - name: 📖 Documentation
+    url: https://github.com/H3X-cpm/XMB-420/blob/main/README.md
+    about: Read the documentation first
+  - name: 🔒 Security Issues
+    url: https://github.com/H3X-cpm/XMB-420/blob/main/SECURITY.md
+    about: Report security vulnerabilities privately
+  - name: 💬 Discord Community
+    url: https://discord.gg/YOUR_DISCORD_INVITE
+    about: Join our Discord community for real-time help
+  - name: 📧 Email Contact
+    url: mailto:YOUR_EMAIL@example.com
+    about: Contact the maintainer directly
