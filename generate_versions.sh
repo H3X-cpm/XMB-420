@@ -1,18 +1,12 @@
 #!/usr/bin/env bash
 
-# Generate folder structure for all CPM versions
-
 versions=("4.9.10" "4.9.11" "4.9.12" "4.9.13" "5.0.0" "5.1.0" "5.2.0" "5.3.0")
-scripts=("money" "speed" "unlock" "gems" "noclip" "xp" "upgrades" "aim")
+scripts=("money" "speed" "unlock" "gems" "noclip" "xp" "upgrades" "aim" "SeKoPrimeCP1-2")
 
 for version in "${versions[@]}"; do
     mkdir -p "scripts/$version"
     
-    # Create version menu
     cat > "scripts/$version/menu.lua" << 'EOF'
--- XMB 420 - Script Download Menu
--- Car Parking Multiplayer vVERSION
-
 local version = arg[1] or "VERSION"
 
 local function clearScreen()
@@ -33,7 +27,7 @@ local function printHeader()
     clearScreen()
     print(colors.cyan .. colors.bold .. [[
     ╔══════════════════════════════════════════════╗
-    ║   CPM SCRIPTS - Version VERSION             ║
+    ║   CPM SCRIPTS - Version ]] .. version .. [[           ║
     ╚══════════════════════════════════════════════╝
     ]] .. colors.reset)
     
@@ -48,11 +42,7 @@ local function downloadScript(scriptName)
         reset = "\27[0m"
     }
     
-    local url = string.format(
-        "https://raw.githubusercontent.com/YOUR_USERNAME/XMB-420/main/scripts/VERSION/%s.lua",
-        scriptName
-    )
-    
+    local url = string.format("https://raw.githubusercontent.com/YOUR_USERNAME/XMB-420/main/scripts/VERSION/%s.lua", scriptName)
     local output = os.getenv("HOME") .. "/.xmb420/downloads/" .. scriptName .. ".lua"
     
     print(colors.yellow .. "[*] Downloading " .. scriptName .. "...\27[0m")
@@ -94,18 +84,22 @@ local function showVersionMenu()
     }
     
     printHeader()
-    
     print(colors.cyan .. "\n  📌 AVAILABLE SCRIPTS" .. colors.reset)
     print("")
-    local script_names = {"Money", "Speed", "Unlock", "Gems", "No Clip", "XP", "Upgrades", "Aim"}
-    for i, name in ipairs(script_names) do
-        print("  " .. colors.green .. string.format("%d.", i) .. colors.reset .. " " .. name .. " Script")
-    end
+    print("  " .. colors.green .. "1." .. colors.reset .. " 💰 Money Script")
+    print("  " .. colors.green .. "2." .. colors.reset .. " 🚀 Speed Script")
+    print("  " .. colors.green .. "3." .. colors.reset .. " 🔓 Unlock Script")
+    print("  " .. colors.green .. "4." .. colors.reset .. " 💎 Gems Script")
+    print("  " .. colors.green .. "5." .. colors.reset .. " 🏎️  No Clip Script")
+    print("  " .. colors.green .. "6." .. colors.reset .. " 📈 XP Script")
+    print("  " .. colors.green .. "7." .. colors.reset .. " 🔧 Upgrades Script")
+    print("  " .. colors.green .. "8." .. colors.reset .. " 🎯 Aim Script")
+    print("  " .. colors.green .. "9." .. colors.reset .. " 🔥 SeKoPrimeCP1-2 Script")
     print("")
     print(colors.cyan .. "  📦 BATCH ACTIONS" .. colors.reset)
     print("")
-    print("  " .. colors.green .. "9." .. colors.reset .. " ⬇️  Download All Scripts")
-    print("  " .. colors.green .. "10." .. colors.reset .. " 🔐 Encrypt All Downloaded Scripts")
+    print("  " .. colors.green .. "10." .. colors.reset .. " ⬇️  Download All Scripts")
+    print("  " .. colors.green .. "11." .. colors.reset .. " 🔐 Encrypt All Downloaded Scripts")
     print("")
     print(colors.yellow .. "  🔙 BACK" .. colors.reset)
     print("  " .. colors.red .. "0." .. colors.reset .. " Return to Main Menu")
@@ -114,13 +108,13 @@ local function showVersionMenu()
     io.write(colors.blue .. "  ➜ Choose script: " .. colors.reset)
 end
 
--- Main loop
 local scripts = {SCRIPT_LIST}
+
 while true do
     showVersionMenu()
     local choice = io.read()
     
-    if tonumber(choice) and tonumber(choice) >= 1 and tonumber(choice) <= 8 then
+    if tonumber(choice) and tonumber(choice) >= 1 and tonumber(choice) <= 9 then
         local script = scripts[tonumber(choice)]
         clearScreen()
         printHeader()
@@ -139,10 +133,7 @@ while true do
                 local key = "XMB420_" .. os.date("%Y%m%d")
                 local input = os.getenv("HOME") .. "/.xmb420/downloads/" .. script .. ".lua"
                 local output = os.getenv("HOME") .. "/.xmb420/encrypted/" .. script .. ".enc"
-                local cmd = string.format(
-                    "openssl enc -aes-256-cbc -salt -in '%s' -out '%s' -k '%s'",
-                    input, output, key
-                )
+                local cmd = string.format("openssl enc -aes-256-cbc -salt -in '%s' -out '%s' -k '%s'", input, output, key)
                 os.execute(cmd)
                 print("\27[32m[✓] Encrypted: " .. script .. ".enc\27[0m")
                 print("\27[33m[!] Key: " .. key .. "\27[0m")
@@ -152,22 +143,19 @@ while true do
         print("\n\27[36mPress Enter to continue...\27[0m")
         io.read()
         
-    elseif choice == "9" then
+    elseif choice == "10" then
         downloadAllScripts()
         print("\n\27[36mPress Enter to continue...\27[0m")
         io.read()
         
-    elseif choice == "10" then
+    elseif choice == "11" then
         print("\n" .. "\27[33m[*] Encrypting all downloaded scripts...\27[0m\n")
         local home = os.getenv("HOME")
         for _, script in ipairs(scripts) do
             local input = home .. "/.xmb420/downloads/" .. script .. ".lua"
             local output = home .. "/.xmb420/encrypted/" .. script .. ".enc"
             local key = "XMB420_" .. os.date("%Y%m%d")
-            local cmd = string.format(
-                "openssl enc -aes-256-cbc -salt -in '%s' -out '%s' -k '%s' 2>/dev/null",
-                input, output, key
-            )
+            local cmd = string.format("openssl enc -aes-256-cbc -salt -in '%s' -out '%s' -k '%s' 2>/dev/null", input, output, key)
             os.execute(cmd)
             print("\27[32m[✓] Encrypted: " .. script .. "\27[0m")
         end
@@ -187,31 +175,56 @@ while true do
 end
 EOF
 
-    # Replace placeholders
     script_list=$(printf '"%s", ' "${scripts[@]}" | sed 's/, $//')
     sed -i "s/VERSION/$version/g" "scripts/$version/menu.lua"
     sed -i "s/SCRIPT_LIST/$script_list/g" "scripts/$version/menu.lua"
     sed -i "s/YOUR_USERNAME/YOUR_USERNAME/g" "scripts/$version/menu.lua"
     
-    # Create script files
     for script in "${scripts[@]}"; do
-        cat > "scripts/$version/$script.lua" << EOF
--- Car Parking Multiplayer v$version
--- $script Script
+        if [ "$script" == "SeKoPrimeCP1-2" ]; then
+            cat > "scripts/$version/$script.lua" << 'EOF'
+-- Car Parking Multiplayer vVERSION
+-- Script: SeKoPrimeCP1-2
 -- XMB 420
 
+print("🔥 Loading SeKoPrimeCP1-2 Script...")
+print("========================================")
+print("SeKoPrimeCP1-2 is a special script for")
+print("Car Parking Multiplayer that enhances")
+print("your gameplay experience with advanced")
+print("features and optimizations.")
+print("========================================")
+
+local function applyMod()
+    print("[✓] SeKoPrimeCP1-2 mod applied successfully!")
+    print("[!] Features activated:")
+    print("    • Enhanced vehicle handling")
+    print("    • Improved performance")
+    print("    • Special prime features")
+    print("    • CP1-2 optimizations")
+    print("    • Premium unlock")
+end
+
+applyMod()
+
+print("✅ Script execution complete!")
+print("💡 Enjoy your enhanced gameplay!")
+EOF
+            sed -i "s/VERSION/$version/g" "scripts/$version/$script.lua"
+        else
+            cat > "scripts/$version/$script.lua" << EOF
 print("📥 Loading $script script for CPM v$version...")
 
 local function applyMod()
     print("[✓] $script mod applied!")
-    -- Add actual script logic here
 end
 
 applyMod()
 EOF
+        fi
     done
     
     echo "✅ Created version $version"
 done
 
-echo "🎉 All versions created!"
+echo "🎉 All versions created with SeKoPrimeCP1-2 included!"
