@@ -1,6 +1,4 @@
-
 ---
-
 ## Updated `CHANGELOG.md`
 
 ```markdown
@@ -76,6 +74,7 @@ All notable changes to XMB 420 will be documented here.
 # Changelog
 
 All notable changes to XMB 420 will be documented here.
+
 
 ---
 
