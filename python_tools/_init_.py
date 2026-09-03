@@ -2,6 +2,6 @@
 # CPM Cheats Integration
 
 __version__ = "1.0"
-__author__ = ""
+__author__ = "Ricksevsolutions"
 
 from . import cpmcheats
