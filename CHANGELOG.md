@@ -1,3 +1,78 @@
+
+---
+
+## Updated `CHANGELOG.md`
+
+```markdown
+# Changelog
+
+All notable changes to XMB 420 will be documented here.
+
+## [v2.9] - September 2026
+
+### Added
+- Version display throughout the application (v2.9)
+- Auto-update check on launch
+- Enhanced premium scripts section with pricing
+- Telegram integration for premium purchases
+- Version tracking with version.txt
+
+### Improved
+- RGB animations now smoother and faster
+- Loading screen shows version number
+- Better script download from GitHub
+- Improved error handling
+
+### Fixed
+- Script download issues resolved
+- Menu display improvements
+
+---
+
+## [v2.0] - August 2026
+
+### Added
+- RGB 24-bit color support
+- Animated rainbow logo
+- Advanced loading screen with modules
+- Social links display
+- Donate options (Ko-Fi, Patreon)
+- Premium scripts section
+- Modded APKs placeholder
+
+### Changed
+- Complete UI redesign
+- Improved performance
+
+---
+
+## [v1.0] - July 2026
+
+### Added
+- Initial release
+- Download CPM scripts by version
+- AES-256-CBC encryption
+- Decryption functionality
+- Script management
+- CPM Cheats integration
+- Settings management
+
+---
+
+## Legend
+
+| Symbol | Meaning |
+|--------|---------|
+| 🎉 | Major release |
+| ✨ | New feature |
+| 🐛 | Bug fix |
+| 🔒 | Security update |
+| 📝 | Documentation |
+| ⚡ | Performance |
+| 🔧 | Configuration |
+| 🚀 | Enhancement |
+
+
 # Changelog
 
 All notable changes to XMB 420 will be documented here.
